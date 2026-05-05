@@ -1,0 +1,7 @@
+# Netlify Redirects Configuration
+
+# API endpoints
+/api/forecast  /.netlify/functions/forecast  200
+
+# Single Page App fallback
+/*    /index.html   200

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Allow specific paths
+Disallow: /functions/
+
+# Sitemaps
+Sitemap: https://yourdomain.netlify.app/sitemap.xml

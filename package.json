@@ -1,0 +1,32 @@
+{
+  "name": "gac-motors-analysis",
+  "version": "1.0.0",
+  "description": "GAC Motors Import Analysis to UAE with FBProphet and XGBoost Forecasting",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "netlify dev",
+    "develop": "netlify dev",
+    "build": "npm run copy-assets",
+    "copy-assets": "mkdir -p public && copy ..\\..\\README.md public\\",
+    "serve": "http-server public"
+  },
+  "keywords": [
+    "GAC Motors",
+    "forecasting",
+    "FBProphet",
+    "XGBoost",
+    "UAE",
+    "imports"
+  ],
+  "author": "salamahmed173-tech",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "chart.js": "^4.2.1",
+    "chartjs-adapter-date-fns": "^3.0.0"
+  }
+}

@@ -8,3 +8,40 @@ build/
 .DS_Store
 *.log
 .vscode/
+
+# Node and npm
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.npm
+package-lock.json
+yarn.lock
+
+# Netlify
+.netlify/
+.netlify/functions/node_modules/
+dist/
+.cache/
+*.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Project specific
+.cache/
+coverage/
+.nyc_output/

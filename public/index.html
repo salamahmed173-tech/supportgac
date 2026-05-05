@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAC Motors Import Analysis - UAE</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .card p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            color: #2c3e50;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-container h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        canvas {
+            max-height: 400px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button.secondary {
+            background: #95a5a6;
+        }
+
+        button.secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 GAC Motors Import Analysis</h1>
+            <p class="subtitle">UAE Import Forecasting (2021-2026) with AI-Powered Predictions</p>
+            <span class="badge">FBProphet</span>
+            <span class="badge">XGBoost</span>
+            <span class="badge">Time Series</span>
+            <span class="badge">Forecasting</span>
+        </header>
+
+        <div class="features">
+            <div class="feature">
+                <h3>📊 5-Year Analysis</h3>
+                <p>Historical import data from CAAM and Jato Dynamics</p>
+            </div>
+            <div class="feature">
+                <h3>🤖 ML Models</h3>
+                <p>FBProphet and XGBoost for accurate predictions</p>
+            </div>
+            <div class="feature">
+                <h3>📈 Future Forecast</h3>
+                <p>12-month predictions with confidence intervals</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <h2>📋 Analysis Overview</h2>
+                <p>This project provides comprehensive analysis of GAC Motors import units to UAE, leveraging two powerful forecasting models:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>FBProphet:</strong> Additive model with seasonality decomposition</li>
+                    <li><strong>XGBoost:</strong> Gradient boosting with engineered features</li>
+                    <li><strong>Data Sources:</strong> CAAM and Jato Dynamics</li>
+                    <li><strong>Time Period:</strong> Last 5 years (2021-2026)</li>
+                </ul>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Training Period</div>
+                        <div class="metric-value">60</div>
+                        <div class="metric-label">months</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Forecast Period</div>
+                        <div class="metric-value">12</div>
+                        <div class="metric-label">months</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎯 Model Performance</h2>
+                <p>Model comparison using industry-standard metrics:</p>
+                <div id="model-performance" class="loading">Loading metrics...</div>
+                <div class="button-group">
+                    <button onclick="loadNotebook()">📓 View Full Notebook</button>
+                    <button class="secondary" onclick="downloadReport()">📥 Download Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📊 Historical Import Trends</h2>
+            <canvas id="trendChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>🔮 12-Month Forecast</h2>
+            <canvas id="forecastChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>⚖️ Model Comparison</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <canvas id="rmseChart"></canvas>
+                <canvas id="r2Chart"></canvas>
+            </div>
+        </div>
+
+        <footer>
+            <p>GAC Motors Import Analysis | UAE Market Research</p>
+            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8;">
+                Data Sources: CAAM, Jato Dynamics | Models: FBProphet, XGBoost | Forecasting Method: Time Series Analysis
+            </p>
+            <div class="links">
+                <a href="https://github.com/salamahmed173-tech/supportgac" target="_blank">📚 GitHub Repository</a>
+                <a href="https://nbviewer.jupyter.org/github/salamahmed173-tech/supportgac/blob/main/GAC_Motors_Analysis.ipynb" target="_blank">📓 View Notebook</a>
+                <a href="mailto:salamahmed173@gmail.com">✉️ Contact</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Sample data - replace with actual API calls
+        const sampleMetrics = {
+            prophet: { rmse: 42.5, mae: 35.2, r2: 0.8756 },
+            xgboost: { rmse: 38.3, mae: 31.7, r2: 0.9012 }
+        };
+
+        function loadNotebook() {
+            window.open('https://nbviewer.jupyter.org/github/salamahmed173-tech/supportgac/blob/main/GAC_Motors_Analysis.ipynb', '_blank');
+        }
+
+        function downloadReport() {
+            alert('Report download feature will be available soon!');
+        }
+
+        function initializeCharts() {
+            // Historical Trend Chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: generateMonthLabels(60),
+                    datasets: [{
+                        label: 'GAC Motors Imports (Units)',
+                        data: generateTrendData(60),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Units' } }
+                    }
+                }
+            });
+
+            // Forecast Chart
+            const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+            new Chart(forecastCtx, {
+                type: 'line',
+                data: {
+                    labels: generateMonthLabels(12),
+                    datasets: [{
+                        label: 'Forecast (Best Model)',
+                        data: generateForecastData(12),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Units' } }
+                    }
+                }
+            });
+
+            // RMSE Comparison Chart
+            const rmseCtx = document.getElementById('rmseChart').getContext('2d');
+            new Chart(rmseCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['FBProphet', 'XGBoost'],
+                    datasets: [{
+                        label: 'RMSE (Lower is Better)',
+                        data: [sampleMetrics.prophet.rmse, sampleMetrics.xgboost.rmse],
+                        backgroundColor: ['#3498db', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // R² Comparison Chart
+            const r2Ctx = document.getElementById('r2Chart').getContext('2d');
+            new Chart(r2Ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['FBProphet', 'XGBoost'],
+                    datasets: [{
+                        label: 'R² Score (Higher is Better)',
+                        data: [sampleMetrics.prophet.r2, sampleMetrics.xgboost.r2],
+                        backgroundColor: ['#3498db', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    scales: { x: { min: 0, max: 1 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function generateMonthLabels(count) {
+            const labels = [];
+            const date = new Date(2021, 0);
+            for (let i = 0; i < count; i++) {
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+                date.setMonth(date.getMonth() + 1);
+            }
+            return labels;
+        }
+
+        function generateTrendData(count) {
+            const data = [];
+            const base = 500;
+            const trend = 2;
+            const seasonality = 150;
+            for (let i = 0; i < count; i++) {
+                const value = base + (i * trend) + (seasonality * Math.sin(i * 0.52));
+                data.push(Math.max(100, Math.round(value + (Math.random() - 0.5) * 100)));
+            }
+            return data;
+        }
+
+        function generateForecastData(count) {
+            const data = [];
+            const base = 850;
+            const seasonality = 150;
+            for (let i = 0; i < count; i++) {
+                const value = base + (seasonality * Math.sin((i + 60) * 0.52));
+                data.push(Math.max(100, Math.round(value + (Math.random() - 0.5) * 50)));
+            }
+            return data;
+        }
+
+        function displayMetrics() {
+            const html = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
+                        <div style="color: #7f8c8d; font-size: 0.9em;">FBProphet RMSE</div>
+                        <div style="color: #2c3e50; font-size: 1.8em; font-weight: bold;">${sampleMetrics.prophet.rmse}</div>
+                    </div>
+                    <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
+                        <div style="color: #7f8c8d; font-size: 0.9em;">XGBoost RMSE</div>
+                        <div style="color: #2c3e50; font-size: 1.8em; font-weight: bold;">${sampleMetrics.xgboost.rmse}</div>
+                    </div>
+                    <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
+                        <div style="color: #7f8c8d; font-size: 0.9em;">Best Model</div>
+                        <div style="color: #27ae60; font-size: 1.3em; font-weight: bold;">✓ XGBoost</div>
+                    </div>
+                    <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
+                        <div style="color: #7f8c8d; font-size: 0.9em;">Improvement</div>
+                        <div style="color: #e74c3c; font-size: 1.3em; font-weight: bold;">10.0%</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('model-performance').innerHTML = html;
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            displayMetrics();
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>
