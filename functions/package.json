@@ -1,0 +1,7 @@
+{
+  "name": "gac-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for GAC Motors Analysis",
+  "main": "forecast.js",
+  "dependencies": {}
+}
