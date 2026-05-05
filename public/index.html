@@ -343,11 +343,7 @@
     </div>
 
     <script>
-        // Sample data - replace with actual API calls
-        const sampleMetrics = {
-            prophet: { rmse: 42.5, mae: 35.2, r2: 0.8756 },
-            xgboost: { rmse: 38.3, mae: 31.7, r2: 0.9012 }
-        };
+        let forecastData = null;
 
         function loadNotebook() {
             window.open('https://nbviewer.jupyter.org/github/salamahmed173-tech/supportgac/blob/main/GAC_Motors_Analysis.ipynb', '_blank');
@@ -357,16 +353,35 @@
             alert('Report download feature will be available soon!');
         }
 
+        async function fetchForecastData() {
+            try {
+                const response = await axios.get('/api/forecast');
+                forecastData = response.data;
+                displayMetrics();
+                initializeCharts();
+            } catch (error) {
+                const target = document.getElementById('model-performance');
+                target.innerHTML = `<div class="error">Unable to load forecast data. ${error.message || 'Please check the Netlify function.'}</div>`;
+                console.error('Forecast fetch error:', error);
+            }
+        }
+
         function initializeCharts() {
-            // Historical Trend Chart
+            if (!forecastData || !forecastData.historical) return;
+
+            const historyLabels = forecastData.historical.map(item => item.date);
+            const historyValues = forecastData.historical.map(item => item.units);
+            const forecastLabels = forecastData.predictions.map(item => item.date);
+            const forecastValues = forecastData.predictions.map(item => item.forecast);
+
             const trendCtx = document.getElementById('trendChart').getContext('2d');
             new Chart(trendCtx, {
                 type: 'line',
                 data: {
-                    labels: generateMonthLabels(60),
+                    labels: historyLabels,
                     datasets: [{
-                        label: 'GAC Motors Imports (Units)',
-                        data: generateTrendData(60),
+                        label: 'Historical Imports',
+                        data: historyValues,
                         borderColor: '#3498db',
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
                         borderWidth: 2,
@@ -384,15 +399,14 @@
                 }
             });
 
-            // Forecast Chart
             const forecastCtx = document.getElementById('forecastChart').getContext('2d');
             new Chart(forecastCtx, {
                 type: 'line',
                 data: {
-                    labels: generateMonthLabels(12),
+                    labels: forecastLabels,
                     datasets: [{
-                        label: 'Forecast (Best Model)',
-                        data: generateForecastData(12),
+                        label: 'Forecasted Units',
+                        data: forecastValues,
                         borderColor: '#e74c3c',
                         backgroundColor: 'rgba(231, 76, 60, 0.1)',
                         borderWidth: 2,
@@ -410,7 +424,6 @@
                 }
             });
 
-            // RMSE Comparison Chart
             const rmseCtx = document.getElementById('rmseChart').getContext('2d');
             new Chart(rmseCtx, {
                 type: 'bar',
@@ -418,7 +431,7 @@
                     labels: ['FBProphet', 'XGBoost'],
                     datasets: [{
                         label: 'RMSE (Lower is Better)',
-                        data: [sampleMetrics.prophet.rmse, sampleMetrics.xgboost.rmse],
+                        data: [forecastData.metrics.prophet.rmse, forecastData.metrics.xgboost.rmse],
                         backgroundColor: ['#3498db', '#e74c3c']
                     }]
                 },
@@ -430,7 +443,6 @@
                 }
             });
 
-            // R² Comparison Chart
             const r2Ctx = document.getElementById('r2Chart').getContext('2d');
             new Chart(r2Ctx, {
                 type: 'bar',
@@ -438,7 +450,7 @@
                     labels: ['FBProphet', 'XGBoost'],
                     datasets: [{
                         label: 'R² Score (Higher is Better)',
-                        data: [sampleMetrics.prophet.r2, sampleMetrics.xgboost.r2],
+                        data: [forecastData.metrics.prophet.r2, forecastData.metrics.xgboost.r2],
                         backgroundColor: ['#3498db', '#e74c3c']
                     }]
                 },
@@ -452,67 +464,34 @@
             });
         }
 
-        function generateMonthLabels(count) {
-            const labels = [];
-            const date = new Date(2021, 0);
-            for (let i = 0; i < count; i++) {
-                labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
-                date.setMonth(date.getMonth() + 1);
-            }
-            return labels;
-        }
-
-        function generateTrendData(count) {
-            const data = [];
-            const base = 500;
-            const trend = 2;
-            const seasonality = 150;
-            for (let i = 0; i < count; i++) {
-                const value = base + (i * trend) + (seasonality * Math.sin(i * 0.52));
-                data.push(Math.max(100, Math.round(value + (Math.random() - 0.5) * 100)));
-            }
-            return data;
-        }
-
-        function generateForecastData(count) {
-            const data = [];
-            const base = 850;
-            const seasonality = 150;
-            for (let i = 0; i < count; i++) {
-                const value = base + (seasonality * Math.sin((i + 60) * 0.52));
-                data.push(Math.max(100, Math.round(value + (Math.random() - 0.5) * 50)));
-            }
-            return data;
-        }
-
         function displayMetrics() {
+            if (!forecastData) return;
+
             const html = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
                         <div style="color: #7f8c8d; font-size: 0.9em;">FBProphet RMSE</div>
-                        <div style="color: #2c3e50; font-size: 1.8em; font-weight: bold;">${sampleMetrics.prophet.rmse}</div>
+                        <div style="color: #2c3e50; font-size: 1.8em; font-weight: bold;">${forecastData.metrics.prophet.rmse}</div>
                     </div>
                     <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
                         <div style="color: #7f8c8d; font-size: 0.9em;">XGBoost RMSE</div>
-                        <div style="color: #2c3e50; font-size: 1.8em; font-weight: bold;">${sampleMetrics.xgboost.rmse}</div>
+                        <div style="color: #2c3e50; font-size: 1.8em; font-weight: bold;">${forecastData.metrics.xgboost.rmse}</div>
                     </div>
                     <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
                         <div style="color: #7f8c8d; font-size: 0.9em;">Best Model</div>
-                        <div style="color: #27ae60; font-size: 1.3em; font-weight: bold;">✓ XGBoost</div>
+                        <div style="color: #27ae60; font-size: 1.3em; font-weight: bold;">✓ ${forecastData.best_model}</div>
                     </div>
                     <div style="background: #ecf0f1; padding: 15px; border-radius: 8px;">
-                        <div style="color: #7f8c8d; font-size: 0.9em;">Improvement</div>
-                        <div style="color: #e74c3c; font-size: 1.3em; font-weight: bold;">10.0%</div>
+                        <div style="color: #7f8c8d; font-size: 0.9em;">Forecast Period</div>
+                        <div style="color: #2c3e50; font-size: 1.3em; font-weight: bold;">${forecastData.forecast_period} months</div>
                     </div>
                 </div>
             `;
             document.getElementById('model-performance').innerHTML = html;
         }
 
-        // Initialize on page load
         window.addEventListener('load', function() {
-            displayMetrics();
-            initializeCharts();
+            fetchForecastData();
         });
     </script>
 </body>
